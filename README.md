@@ -1,31 +1,27 @@
 # Linux Driver Practices
 
-This is reference from [動手寫 Linux Driver](http://blog.logan.tw/2013/01/linux-driver.html)
+This is reference from [DriverPractice](https://github.com/starnight/DriverPractice)
 
 ## Environment Preparation
+```
+$lsb_release -a
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 16.04.6 LTS
+Release:	16.04
+Codename:	xenial
 
-You may use Git to clone the repository, toolchain to build the codes.
+$uname -r
+4.15.0-106-generic
+```
+### TOPIC:
+- Hello World
+- CharacterDevice
+- Ioctl
+- Lock
+- Multiplexing
+- GPIO Interrupt
+- Framework
+- Kprobe
+- Cypto
 
-If you develope for the embedded system, you may need the Device Tree Compiler (DTC).
-
-### Archlinux
-
-1. Install development tools
-	```sh
-	pacman -S git
-	pacman -S make gcc
-	```
-
-2. Install the Linux kernel headers.  It depends on the environment.
-
-	* x86 series ``` pacman -S linux-headers ```
-
-	* ARMv7 series ``` linux-armv7-headers ```
-	
-	* Even by the board ...
-
-
-3. Install the Device Tree Compiler (DTC)
-	```sh
-	pacman -S dtc
-	```
