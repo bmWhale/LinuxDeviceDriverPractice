@@ -35,7 +35,7 @@ static int handler_fault(struct kprobe *p, struct pt_regs *regs, int trapnr) {
 /* For each probe you need to allocate a kprobe structure */
 static struct kprobe kp = {
 	/* The kernel diver function going to be monitored.*/
-	.symbol_name = "example_close",
+	.symbol_name = "example_open",
 	/* Assign the callback functions to the hooks. */
 	.pre_handler = handler_pre,
 	.post_handler = handler_post,

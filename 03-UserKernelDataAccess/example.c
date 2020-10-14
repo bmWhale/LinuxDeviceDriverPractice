@@ -1,7 +1,8 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/fs.h>
-#include <asm/uaccess.h>
+//#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 #include <linux/string.h>
 
 MODULE_LICENSE("Dual BSD/GPL");

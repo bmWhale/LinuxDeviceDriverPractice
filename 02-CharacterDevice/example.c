@@ -16,7 +16,8 @@ static int example_close(struct inode *inode, struct file *filp) {
 
 static ssize_t example_read(struct file *filp, char __user *buf, size_t size, loff_t *f_pos) {
 	printk("<1>EXAMPLE: read (size=%zu)\n", size);
-	return 0;
+	strncpy(buf,"hello",size);
+	return strlen("hello");
 }
 
 static ssize_t example_write(struct file *filp, const char __user *buf, size_t size, loff_t *f_pos) {

@@ -3,7 +3,7 @@
 #include <linux/cdev.h>
 #include <linux/fs.h>
 #include <linux/device.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 #include <linux/string.h>
 #include <linux/errno.h>
 
@@ -20,7 +20,7 @@ static int example_open(struct inode *inode, struct file *filp) {
 	return 0;
 }
 
-static int example_close(struct inode *inode, struct file *filp) {
+static int example_close1(struct inode *inode, struct file *filp) {
 	printk(KERN_DEBUG "EXAMPLE: close\n");
 	
 	/* Release the mapping of file data address. */
@@ -79,7 +79,7 @@ static ssize_t example_write(struct file *filp, const char __user *buf, size_t s
 
 static struct file_operations example_fops = {
 	.open = example_open,
-	.release = example_close,
+	.release = example_close1,
 	.read = example_read,
 	.write = example_write,
 };

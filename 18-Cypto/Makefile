@@ -1,7 +1,8 @@
 PROJ=mycrypto
-obj-m := $(PROJ).o
+obj-m += mycrypto.o
+mycrypto-objs:= crypto.o base64.o
 ccflags-y := -DDEBUG
-
+PWD:=$(shell pwd)
 KERNEL_LOCATION=/lib/modules/$(shell uname -r)
 BUILDDIR=$(KERNEL_LOCATION)/build
 
@@ -16,7 +17,7 @@ install:
 
 uninstall:
 	sudo modprobe -r $(PROJ)
-	sudo rm $(KERNEL_LOCATION)/extra/$(PROJ).ko.xz
+	sudo rm $(KERNEL_LOCATION)/extra/$(PROJ).ko
 	# Rebuild the kernel module dependencies for modprobe
 	sudo depmod -a
 

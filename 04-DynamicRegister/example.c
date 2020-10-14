@@ -2,8 +2,9 @@
 #include <linux/module.h>
 #include <linux/cdev.h>
 #include <linux/fs.h>
-#include <asm/uaccess.h>
+//#include <asm/uaccess.h>
 #include <linux/string.h>
+#include <linux/uaccess.h>
 
 MODULE_LICENSE("Dual BSD/GPL");
 
@@ -28,7 +29,7 @@ static ssize_t example_read(struct file *filp, char __user *buf, size_t size, lo
 		if(copy_to_user(buf + count, &byte, 1) != 0) {
 			break;
 		}
-		printk("<1>EXAMPLE: read (buf[%zu]=%02x)\n", count, (unsigned)byte);
+		printk("<1>EXAMPLE: read (buf[%zu]=%02x (%c))\n", count, (unsigned)byte, (char)byte);
 	}
 
 	return count;

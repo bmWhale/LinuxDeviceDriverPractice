@@ -9,6 +9,7 @@
 #include <asm/uaccess.h>
 #include <linux/string.h>
 #include <linux/errno.h>
+#include <linux/version.h>
 #include "test_ioctl.h"
 
 MODULE_LICENSE("Dual BSD/GPL");
@@ -41,10 +42,14 @@ static struct device_data_reg dev_data = {
 									.flag = 0,
 									.data = _buffer,
 									.len = 12};
-
 /* Read timer interrupt handler. */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 static void example_read_timeout_handler(unsigned long arg) {
 	struct device_data_reg *data_p = (struct device_data_reg *)arg;
+#else
+static void example_read_timeout_handler(struct timer_list *t) {
+	struct device_data_reg *data_p = from_timer(&dev_data, t, read_timeout);
+#endif
 	unsigned long flags;
 
 	printk(KERN_DEBUG "EXAMPLE: read timer timeout\n");
@@ -61,8 +66,13 @@ static void example_read_timeout_handler(unsigned long arg) {
 }
 
 /* Write timer interrupt handler. */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 static void example_write_timeout_handler(unsigned long arg) {
 	struct device_data_reg *data_p = (struct device_data_reg *)arg;
+#else
+static void example_write_timeout_handler(struct timer_list *t) {
+	struct device_data_reg *data_p = from_timer(&dev_data, t, write_timeout);
+#endif
 	unsigned long flags;
 
 	printk(KERN_DEBUG "EXAMPLE: write timer timeout\n");
@@ -94,12 +104,17 @@ static int example_open(struct inode *inode, struct file *filp) {
 	spin_lock_init(&(dev_data.read_splock));
 	spin_lock_init(&(dev_data.write_splock));
 	/* initial the read / write timers. */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 	init_timer(&(dev_data.read_timeout));
 	init_timer(&(dev_data.write_timeout));
 	dev_data.read_timeout.function = example_read_timeout_handler;
 	dev_data.write_timeout.function = example_write_timeout_handler;
 	dev_data.read_timeout.data = (unsigned long)(&dev_data);
 	dev_data.write_timeout.data = (unsigned long)(&dev_data);
+#else
+	timer_setup(&(dev_data.read_timeout),example_read_timeout_handler,0);
+	timer_setup(&(dev_data.write_timeout),example_write_timeout_handler,0);
+#endif
 	mod_timer(&(dev_data.read_timeout), jiffies + 2*HZ);
 	mod_timer(&(dev_data.write_timeout), jiffies + 2*HZ);	
 	dev_data.read_flag = 0;

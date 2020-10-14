@@ -2,7 +2,7 @@
 #include <linux/module.h>
 #include <linux/cdev.h>
 #include <linux/fs.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 #include <linux/string.h>
 #include <linux/errno.h>
 
@@ -63,7 +63,7 @@ static ssize_t example_write(struct file *filp, const char __user *buf, size_t s
 			break;
 		}
 		data_p[*f_pos] = byte;
-		printk(KERN_DEBUG "EXAMPLE: write (buf[%zu]=%02x)\n", count, (unsigned)byte);
+		printk(KERN_DEBUG "EXAMPLE: write (buf[%zu]=%02x (%c))\n", count, (unsigned)byte,(char)byte);
 	}
 
 	if((count == 0) && ((*f_pos) >= strlen(data))) {

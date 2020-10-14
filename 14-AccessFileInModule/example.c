@@ -4,9 +4,10 @@
 #include <linux/fs.h>
 #include <linux/stat.h>
 #include <linux/device.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 #include <linux/string.h>
 #include <linux/errno.h>
+#include <linux/slab.h>
 #include "test_ioctl.h"
 
 MODULE_LICENSE("Dual BSD/GPL");
@@ -30,7 +31,7 @@ struct file* ch_dev = NULL;
 
 static int example_open(struct inode *inode, struct file *filp) {
 	int err = 0;
-	struct kstat st;
+	//struct kstat st;
 
 	printk(KERN_DEBUG "EXAMPLE: open\n");
 
@@ -43,12 +44,14 @@ static int example_open(struct inode *inode, struct file *filp) {
 	if(IS_ERR(ch_dev)) {
 		err = PTR_ERR(ch_dev);
 	}
+	#if 0
 	else {
 		/* Have the file's size. */
-		err = vfs_getattr(&(ch_dev->f_path), &st);
+		//err = vfs_getattr(&(ch_dev->f_path), &st);
+		vfs_stat(FILE_DIR,&st);
 		dev_data.len = st.size;
 	}
-
+	#endif
 	return err;
 }
 
@@ -68,13 +71,13 @@ static int example_close(struct inode *inode, struct file *filp) {
 }
 
 static ssize_t example_read(struct file *filp, char __user *buf, size_t size, loff_t *f_pos) {
-	size_t count;
-	uint8_t byte;
+	//size_t count;
+	//uint8_t byte;
 	struct device_data_reg *data_p;
-
-	mm_segment_t old_fs;
-	ssize_t ret;
 	loff_t tmp_pos;
+	mm_segment_t old_fs;
+	ssize_t ret=0;
+	char *p=NULL;
 	
 	printk(KERN_DEBUG "EXAMPLE: read (size=%zu)\n", size);
 
@@ -83,9 +86,9 @@ static ssize_t example_read(struct file *filp, char __user *buf, size_t size, lo
 	/* Ask kernel do not check the memory boundary. */
 	old_fs = get_fs();
 	set_fs(get_ds());
-
 	/* Read from the device data to user space. */
-	for(count = 0; (count < size) && (*f_pos) < data_p->len; ++(*f_pos), ++count) {
+#if 0
+	for(count = 0; (count < size) && (*f_pos) < data_p->len && count <10; ++(*f_pos), ++count) {
 		/* Read 1 byte from the opened file. */
 		tmp_pos = *f_pos;
 		ret = vfs_read(ch_dev, &byte, 1, &tmp_pos);
@@ -96,11 +99,24 @@ static ssize_t example_read(struct file *filp, char __user *buf, size_t size, lo
 		printk(KERN_DEBUG "EXAMPLE: read (buf[%zu]=%02x '%c')\n",
 				count, (unsigned)byte, (char)byte);
 	}
-
+#else
+	tmp_pos = *f_pos;
+	p = kmalloc(size, GFP_KERNEL);
+	if (!p){
+		printk(KERN_ERR " no memory!");
+	}
+	else if(ch_dev){
+		ret = vfs_read(ch_dev, p, size, &tmp_pos);
+		if((ret >= 0) && (copy_to_user(buf, p, ret) != 0)){
+			printk("copy to user!\n");
+		}
+		kfree(p);
+	}
+#endif
 	/* Ask kernel to check the memory boundary again. */
 	set_fs(old_fs);
-
-	return count;
+	printk("read (%ld): %s %02x pos:%lld\n",ret,buf,buf[11],tmp_pos);
+	return ret;
 }
 
 static ssize_t example_write(struct file *filp, const char __user *buf, size_t size, loff_t *f_pos) {
